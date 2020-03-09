@@ -7,7 +7,7 @@
 
 module.exports = {
 
-    like : (req,res) => {
+    like : (req,res) => { //Chamado quando um Like ocorrer
         
         sails.log.info("LikeController action Like");
 
@@ -53,7 +53,7 @@ module.exports = {
         }); 
     },
 
-    superLike : (req,res) => {
+    superLike : (req,res) => { //Chamado quando um SuperLike ocorrer
 
         sails.log.info("LikeController action SuperLike");
 
@@ -99,7 +99,7 @@ module.exports = {
         }); 
     },
     
-    deslike : (req,res) => {
+    deslike : (req,res) => {//Chamado quando um deslike ocorrer
 
         sails.log.info("LikeController action deslike");
 

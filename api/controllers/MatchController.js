@@ -1,7 +1,7 @@
 
 module.exports = {
 
-   match : (user0,user1,res) => {
+   match : (user0,user1,res) => { //Chamado quando um match ocorrer
 
         sails.log.info("MatchController action match");
 
@@ -18,7 +18,7 @@ module.exports = {
         });
     },
     
-    delete : (req,res) => {
+    delete : (req,res) => { //Deletar um match ocorrido
         
         sails.log.info("MatchController action delete");
 
@@ -38,7 +38,7 @@ module.exports = {
         });
     },
 
-    select : (req,res) => {
+    select : (req,res) => { //Retornar todos os matchs para um determinado usuário
 
         sails.log.info("MatchController action select");
         const user_id = req.param("id");
