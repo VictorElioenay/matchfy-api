@@ -14,7 +14,7 @@ module.exports = {
         const c2 = 0.5/20.0;//Constante para auxílio. 0,5/(Distância Máxima Entre Dois Pontos)
         const lat = -21.783205, lon = -46.567724;//Dados a receber do Front
 
-        //Função de Matchi
+        //Função de Match
         const sql = "select * from usuarios order by ( abs( idade - " + userIdade + " )* " + c1 
         + " + earth_distance(ll_to_earth(lat, long),ll_to_earth(" + lat + "," + lon + ")) * " + c2 + " );" ;
 

@@ -8,8 +8,8 @@
 module.exports = {
 
     like : (req,res) => {
-    
-        sails.log.info("LikeController");
+        
+        sails.log.info("LikeController action Like");
 
         const body = req.body.data;
         const user = body.user;
@@ -20,26 +20,31 @@ module.exports = {
         sails.getDatastore("banco_dados").sendNativeQuery(sql,(err,resul) => {
            
             if( !err ){
-                sails.log.info(resul);
-                const sql = "select user_id, like_id from likes where user_id = " + target.id + " and like_id = " + user.id + " ";
-                sails.getDatastore("banco_dados").sendNativeQuery(sql,(err,resul) =>{
-                    if( !err ){
-                        sails.log.info(resul);
-                        if(resul.rowCount != 0){
-                            const sql = "insert into match( user0_id, user1_id) values ( " + user.id + "," + target.id + " )";
-                            return res.json({like: true,match : true});
-                        }
-                        else{
-                            return res.json({like: true,match : false});
-                        }
-                    }
-                    else{
-                        //sail.log.info(err);
-                        return res.json({like:true,match : false});
-                    }
-                });
 
-                
+                sails.log.info(resul);
+
+                const sql = "select * from likes where user_id = " + target.id + 
+                " and like_id = " + user.id + " union select * from superLikes where user_id = " + target.id + " and superlike_id = " + user.id ;
+               
+                sails.getDatastore("banco_dados").sendNativeQuery(sql, (err,resul) =>{
+
+                    if( !err ){
+
+                        sails.log.info(resul);
+
+                        if(resul.rowCount != 0){
+                            const matchController = require("./MatchController");
+                            matchController.match(user.id,target.id,res);
+                        }
+                        else {
+                            return res.json({ like : true, match : false });
+                        }
+                    }
+                    else {
+                        sails.log.info(err);
+                        return res.json({ like :true, match : false });
+                    }
+                });                
             }
             else {
                 sails.log.info(err);
@@ -50,6 +55,70 @@ module.exports = {
 
     superLike : (req,res) => {
 
-    } 
+        sails.log.info("LikeController action SuperLike");
+
+        const body = req.body.data;
+        const user = body.user;
+        const target = body.target;
+        const sql = "insert into superLikes(user_id, superLike_id) values ( " + user.id + "," + target.id + " )";
+        
+        
+        sails.getDatastore("banco_dados").sendNativeQuery(sql,(err,resul) => {
+           
+            if( !err ){
+                
+                sails.log.info(resul);
+
+                const sql = "select * from likes where user_id = " + target.id + 
+                " and like_id = " + user.id + " union select * from superLikes where user_id = " + target.id + " and superlike_id = " + user.id ;
+                
+                sails.getDatastore("banco_dados").sendNativeQuery(sql,(err,resul) =>{
+
+                    if( !err ){
+
+                        sails.log.info(resul);
+
+                        if(resul.rowCount != 0){
+                            const matchController = require("./MatchController");
+                            matchController.match(user.id,target.id,res);
+                        }
+                        else {
+                            return res.json({ like : true, match : false });
+                        }
+                    }
+                    else {
+                        sails.log.info(err);
+                        return res.json({ like : true, match : false });
+                    }
+                });                
+            }
+            else {
+                sails.log.info(err);
+                return res.json({ like : false });
+            }
+        }); 
+    },
+    
+    deslike : (req,res) => {
+
+        sails.log.info("LikeController action deslike");
+
+        const body = req.body.data;
+        const user = body.user;
+        const target = body.target;
+        const sql = "insert into deslikes(user_id, deslike_id) values ( " + user.id + "," + target.id + " )";
+
+        sails.getDatastore("banco_dados").sendNativeQuery(sql,(err,resul) => {
+
+            if(!err){
+                sails.log.info(resul);
+                return res.json({ deslike : true });
+            } else {
+                sails.log.info(err);
+                return res.json({ deslike : false });
+            }
+
+        });
+    }
 };
 

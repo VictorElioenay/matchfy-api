@@ -16,7 +16,7 @@ module.exports.datastores = {
   banco_dados: {
     // Aqui vocês devem alterar a url de conexão com o banco de dados. 
     adapter : "sails-postgresql",
-    url: "postgresql://postgres:Leopardo10@localhost:5432/teste"
+    url: "postgresql://postgres:setembro7@localhost:5432/teste"
   }
 
 
