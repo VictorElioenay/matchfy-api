@@ -1,26 +1,27 @@
 
 module.exports = {
 
-   match : (user0,user1,res) => { //Chamado quando um match ocorrer
+    match : (user1,user2,res) => { //Chamado quando um match ocorrer
 
-        sails.log.info("MatchController action match");
+        sails.log.info("MatchController action Match");
 
-        const sql = "insert into match(user0_id, user1_id) values ( " + user0 +"," + user1 +" ) ";      
+        const sql = "insert into match(user0_id, user1_id) values ( " + user1 +"," + user2 +" ) ";      
         sails.getDatastore("banco_dados").sendNativeQuery(sql, (err,resul) => {
 
             if( !err ){
-                return res.json({ like : true,match : true });
+                require("./ChatController").create(user1,user2);
+                return res.json({ match : true });
             }
             else{
                 sails.log.info(err);
-                return res.json({ like : true,match : false });
+                return res.json({ match : false });
             }
         });
     },
     
     delete : (req,res) => { //Deletar um match ocorrido
         
-        sails.log.info("MatchController action delete");
+        sails.log.info("MatchController action Delete");
 
         const body = req.body.data;
         const user0 = body.user0.id;
@@ -34,16 +35,16 @@ module.exports = {
             } else {
                 return res.json({ delete : false });
             }           
-
         });
     },
 
     select : (req,res) => { //Retornar todos os matchs para um determinado usuário
 
-        sails.log.info("MatchController action select");
+        sails.log.info("MatchController action Select");
         const user_id = req.param("id");
+        sails.log.info("user_id: " + user_id);
 
-        const sql = "select user0_id as ID from match where user1_id = " + user_id + " union all select user1_id from match where user0_id = " + user_id;
+        var sql = "select user0_id as ID from match where user1_id = " + user_id + " union all select user1_id from match where user0_id = " + user_id;
         sails.getDatastore("banco_dados").sendNativeQuery(sql, (err,resul) => {
 
             sails.log.info(resul);
@@ -51,7 +52,7 @@ module.exports = {
             if( !err ) {
                 if( resul.rowCount != 0 ){
 
-                    let sql = "select id, nome, email, picture from usuarios where id = any(array[" + resul.rows[0].id;
+                    sql = "select id, nome, email, picture from usuarios where id = any(array[" + resul.rows[0].id;
                     for( let i = 1; i<resul.rowCount; i++ ){
                         sql += "," + resul.rows[i].id;
                     }
@@ -59,8 +60,10 @@ module.exports = {
 
                     sails.getDatastore("banco_dados").sendNativeQuery(sql,(err,resul) => {
                         
+                        sails.log.info(resul)
+
                         if( !err )
-                            return res.json({results : resul.rows});
+                            return res.json({ list : true, results : resul.rows, count : resul.rowCount });
                         else
                             return res.json({ list : false });
                     });
@@ -72,10 +75,7 @@ module.exports = {
             } else {
                 return res.json({ list : false });
             }
-
-        } );
-
+        });
     }
-
 };
 

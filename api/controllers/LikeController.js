@@ -12,9 +12,9 @@ module.exports = {
         sails.log.info("LikeController action Like");
 
         const body = req.body.data;
-        const user = body.user;
-        const target = body.target;
-        const sql = "insert into likes(user_id, like_id) values ( " + user.id + "," + target.id + " )";
+        const user_id = body.user_id;
+        const target_id = body.target_id;
+        const sql = "insert into likes(user_id, like_id) values ( " + user_id + "," + target_id + " )";
         
         
         sails.getDatastore("banco_dados").sendNativeQuery(sql,(err,resul) => {
@@ -23,8 +23,8 @@ module.exports = {
 
                 sails.log.info(resul);
 
-                const sql = "select * from likes where user_id = " + target.id + 
-                " and like_id = " + user.id + " union select * from superLikes where user_id = " + target.id + " and superlike_id = " + user.id ;
+                const sql = "select * from likes where user_id = " + target_id + 
+                " and like_id = " + user_id + " union select * from superLikes where user_id = " + target_id + " and superlike_id = " + user_id ;
                
                 sails.getDatastore("banco_dados").sendNativeQuery(sql, (err,resul) =>{
 
@@ -34,7 +34,7 @@ module.exports = {
 
                         if(resul.rowCount != 0){
                             const matchController = require("./MatchController");
-                            matchController.match(user.id,target.id,res);
+                            matchController.match(user_id,target_id,res);
                         }
                         else {
                             return res.json({ like : true, match : false });
@@ -58,9 +58,9 @@ module.exports = {
         sails.log.info("LikeController action SuperLike");
 
         const body = req.body.data;
-        const user = body.user;
-        const target = body.target;
-        const sql = "insert into superLikes(user_id, superLike_id) values ( " + user.id + "," + target.id + " )";
+        const user_id = body.user_id;
+        const target_id = body.target_id;
+        const sql = "insert into superLikes(user_id, superLike_id) values ( " + user_id + "," + target_id + " )";
         
         
         sails.getDatastore("banco_dados").sendNativeQuery(sql,(err,resul) => {
@@ -69,8 +69,8 @@ module.exports = {
                 
                 sails.log.info(resul);
 
-                const sql = "select * from likes where user_id = " + target.id + 
-                " and like_id = " + user.id + " union select * from superLikes where user_id = " + target.id + " and superlike_id = " + user.id ;
+                const sql = "select * from likes where user_id = " + target_id + 
+                " and like_id = " + user_id + " union select * from superLikes where user_id = " + target_id + " and superlike_id = " + user_id ;
                 
                 sails.getDatastore("banco_dados").sendNativeQuery(sql,(err,resul) =>{
 
@@ -80,21 +80,21 @@ module.exports = {
 
                         if(resul.rowCount != 0){
                             const matchController = require("./MatchController");
-                            matchController.match(user.id,target.id,res);
+                            matchController.match(user_id,target_id,res);
                         }
                         else {
-                            return res.json({ like : true, match : false });
+                            return res.json({ superlike : true, match : false });
                         }
                     }
                     else {
                         sails.log.info(err);
-                        return res.json({ like : true, match : false });
+                        return res.json({ superlike : true, match : false });
                     }
                 });                
             }
             else {
                 sails.log.info(err);
-                return res.json({ like : false });
+                return res.json({ superlike : false });
             }
         }); 
     },
@@ -104,9 +104,9 @@ module.exports = {
         sails.log.info("LikeController action deslike");
 
         const body = req.body.data;
-        const user = body.user;
-        const target = body.target;
-        const sql = "insert into deslikes(user_id, deslike_id) values ( " + user.id + "," + target.id + " )";
+        const user_id = body.user_id;
+        const target_id = body.target_id;
+        const sql = "insert into deslikes(user_id, deslike_id) values ( " + user_id + "," + target_id + " )";
 
         sails.getDatastore("banco_dados").sendNativeQuery(sql,(err,resul) => {
 
