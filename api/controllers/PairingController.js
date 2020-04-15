@@ -25,31 +25,38 @@ module.exports = {
             else {
                 sails.log.info(resul);
                 
-                resul = resul.rows[0];
+                if( resul.rowCount > 0 ){//Adicionar este IF
 
-                user_idade = resul.idade;
-                user_lat = resul.lat;
-                user_long = resul.long;
-                pref_idadeMax = resul.idade_max;
-                pre_idadeMin = resul.idade_min;
-                dist_max = resul.dist_max*1000;
-                interesse = resul.interesse;
+                    resul = resul.rows[0];
 
-                const sql = "select * from usuarios where (idade - "+ pre_idadeMin +") >= 0 and idade <= "+ pref_idadeMax + 
-                                " and earth_distance(ll_to_earth(lat, long),ll_to_earth("+user_lat+","+ user_long+")) <= "+ dist_max +
-                                    " and id !=" + user_id +
-                                        " order by ( abs(idade-"+user_idade+") + earth_distance(ll_to_earth(lat, long),ll_to_earth("+user_lat+","+ user_long+")) )" 											  
-            
-                sails.getDatastore("banco_dados").sendNativeQuery(sql,(err,resul)=>{
-                    if(!err){
-                        // console.log( resul );
-                        res.json( resul );//Retornar o resultado da consulta ao banco
-                    }
-                    else {
-                        // console.log(err);
-                        res.json( err );//Retornar o erro ocorrido durante a consulta ao banco
-                    }
-                })
+                    user_idade = resul.idade;
+                    user_lat = resul.lat;
+                    user_long = resul.long;
+                    pref_idadeMax = resul.idade_max;
+                    pre_idadeMin = resul.idade_min;
+                    dist_max = resul.dist_max*1000;
+                    interesse = resul.interesse;
+
+                    const sql = "select * from usuarios where (idade - "+ pre_idadeMin +") >= 0 and idade <= "+ pref_idadeMax + 
+                                    " and earth_distance(ll_to_earth(lat, long),ll_to_earth("+user_lat+","+ user_long+")) <= "+ dist_max +
+                                        " and id !=" + user_id +
+                                            " order by ( abs(idade-"+user_idade+") + earth_distance(ll_to_earth(lat, long),ll_to_earth("+user_lat+","+ user_long+")) )" 											  
+                
+                    sails.getDatastore("banco_dados").sendNativeQuery(sql,(err,resul)=>{
+                        if(!err){
+                            // console.log( resul );
+                            res.json( resul );//Retornar o resultado da consulta ao banco
+                        }
+                        else {
+                            // console.log(err);
+                            res.json( err );//Retornar o erro ocorrido durante a consulta ao banco
+                        }
+                    })
+                }
+                else {
+                    // O IF termina aqui
+                    res.json(resul)
+                }
             }
         });
     }
