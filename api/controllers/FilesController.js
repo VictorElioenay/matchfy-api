@@ -50,7 +50,7 @@ module.exports = {
         var user_id = req.param("id");
         var SkipperDisk = require('skipper-disk');
         var fileAdapter = SkipperDisk();
-
+    
         fileAdapter.ls(require("path").join(process.cwd(),"users_images",user_id), (err,files) => {
             if(err)
                 return res.json({ err : true })
@@ -58,6 +58,5 @@ module.exports = {
                 return res.json(files)
         })
     }
-
 };
 

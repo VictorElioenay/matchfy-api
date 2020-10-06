@@ -1,0 +1,15 @@
+/**
+ * Matchs.js
+ *
+ * @description :: A model definition represents a database table/collection.
+ * @docs        :: https://sailsjs.com/docs/concepts/models-and-orm/models
+ */
+
+module.exports = {
+
+  attributes: {
+    user_id1 : { type : 'number', required : true },
+    user_id2 : { type : 'number', required : true },
+  },
+};
+

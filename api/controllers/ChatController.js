@@ -1,5 +1,6 @@
 
 var fs = require("fs");
+const { use } = require("passport");
 var path = require("path");
 
 module.exports = {
@@ -17,79 +18,86 @@ module.exports = {
     
     },
     
-    accessRequest : (req,res) => {
+    accessRequest : async (req,res) => {
 
         const user_id = req.body.user_id;
         const target_id = req.body.target_id;
-        const path1 = path.join(process.cwd(),"mensagens",user_id +"_"+target_id+".txt");
-        const path2 = path.join(process.cwd(),"mensagens",target_id +"_"+user_id+".txt");
+
+        const match = await Matchs.findOne({ 
+            or:[
+                {user_id1 : user_id},
+                {user_id2 : user_id},
+            ],
+            or:[
+                {user_id1 : target_id},
+                {user_id2 : target_id},
+            ]
+        })
+
+        const path1 = path.join(process.cwd(),"mensagens",match.user_id1+"_"+match.user_id2+".txt");
 
         if( fs.existsSync(path1) ){
-            sails.sockets.join(req,user_id+"_"+target_id);
-            return res.json({ access : true });
-        }
-        else if( fs.existsSync(path2) ){
-            sails.sockets.join(req,target_id+"_"+user_id);
+            sails.sockets.join(req,match.user_id1+"_"+match.user_id2);
             return res.json({ access : true });
         }
 
         res.json({ access : false });
     },
 
-    addMsg : (req,res) => {
+    addMsg : async (req,res) => {
         
-        // if( req.body.id )
-        sails.log.info(sails.sockets.getId(req));
         const user_id = req.body.user_id;
         const target_id = req.body.target_id;
-        const text = user_id + ":" + req.body.text+"(EOF)";
-        const path1 = path.join(process.cwd(),"mensagens",user_id +"_"+target_id+".txt");
-        const path2 = path.join(process.cwd(),"mensagens",target_id +"_"+user_id+".txt");
+        
+        const match = await Matchs.findOne({ 
+            or:[
+                {user_id1 : user_id},
+                {user_id2 : user_id},
+            ],
+            or:[
+                {user_id1 : target_id},
+                {user_id2 : target_id},
+            ]
+        })
 
-        sails.log.info("id" + user_id + " ta_id" + target_id);
-        sails.log.info(text);
+        const text = user_id + ":" + req.body.text + "(EOF)";
+        const path1 = path.join(process.cwd(),"mensagens",match.user_id1+"_"+match.user_id2+".txt");
 
         if( fs.existsSync(path1) ){
             fs.appendFile(path1,text,(err)=>{
                 if(err)
                     return res.json({err : true});
-                sails.sockets.broadcast(user_id +"_"+target_id,"change",{change : true});
-                return res.json({err : false});
-
-            });
-        }
-        else if( fs.existsSync(path2) ){
-            fs.appendFile(path2,text,(err)=>{
-                if(err)
-                    return res.json({err : true});
-                sails.sockets.broadcast(target_id +"_"+user_id,"change",{change : true});
+                sails.sockets.broadcast(match.user_id1+"_"+match.user_id2,{text});
                 return res.json({err : false});
             });
         }
     },
 
-    getMsgs : (req,res) => {
+    getMsgs : async (req,res) => {
 
-        const user_id = req.body.user_id;
-        const target_id = req.body.target_id;
-        const path1 = path.join(process.cwd(),"mensagens",user_id +"_"+target_id+".txt");
-        const path2 = path.join(process.cwd(),"mensagens",target_id +"_"+user_id+".txt");
+        const user_id = req.param('user_id');
+        const target_id = req.param('target_id');
+
+        const match = await Matchs.findOne({ 
+            or:[
+                {user_id1 : user_id},
+                {user_id2 : user_id},
+            ],
+            or:[
+                {user_id1 : target_id},
+                {user_id2 : target_id},
+            ]
+        })
+
+        const path1 = path.join(process.cwd(),"mensagens",match.user_id1+"_"+match.user_id2+".txt");
 
         if( fs.existsSync(path1) ){
             fs.readFile(path1,"utf8",(err,data)=>{
                 if(err)
-                    return res.json({err:true});
-                return res.json({data:data});
+                    return res.json({mensagens:undefined});
+                return res.json({mensagens:data});
             })          
         }
-        else if( fs.existsSync(path2) ){
-            fs.readFile(path2,"utf8",(err,data)=>{
-                if(err)
-                    return res.json({err:true});
-                return res.json({data:data});
-            })
-        }
     } 
-
 };
 

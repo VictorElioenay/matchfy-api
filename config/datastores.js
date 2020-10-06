@@ -8,16 +8,8 @@ module.exports.datastores = {
 
   default: {
 
-    // adapter: 'sails-mysql',
-    // url: 'mysql://user:password@host:port/database',
+    adapter : "sails-postgresql",
+    url: "postgresql://postgres:setembro7@localhost:5432/match-fy"
 
   },
-
-  banco_dados: {
-    // Aqui vocês devem alterar a url de conexão com o banco de dados. 
-    adapter : "sails-postgresql",
-    url: "postgresql://postgres:setembro7@localhost:5432/teste"
-  }
-
-
 };

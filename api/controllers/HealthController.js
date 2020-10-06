@@ -13,9 +13,7 @@ module.exports = {
         const resposta = {
             health : true,
         }
-        return res.status(200).send(resposta);   
-        
+        return res.status(200).send(resposta);      
     }
-    
 };
 

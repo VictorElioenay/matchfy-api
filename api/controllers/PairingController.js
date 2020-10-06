@@ -7,58 +7,57 @@
 
 module.exports = {
   
-    pairing : (req,res) => {
+    pairing : async (req,res) => {
 
         sails.log.info("PairingController action Pairing");
 
         const user_id = req.param("id");
-        const sql = "select u.lat, u.long, u.idade, pr.* from usuarios as u " +
-                       "inner join preferencias as pr on u.id = pr.id " +
-                            "where u.id ="+user_id;
+        var preferences = await UserPreferences.findOne({user_id:user_id})
+        var location = await UserLocation.findOne({user_id:user_id})
 
-        let user_idade, user_lat, user_long, pref_idadeMax, pre_idadeMin, dist_max, interesse;
+        let deslikesIds = await Deslikes.find({ 
+            where : {
+                user_id : user_id
+            },
+            select : ['target_id']
+        })
+        
+        deslikesIds = deslikesIds.map((values)=>{
+            return values.target_id
+        })
 
-        sails.getDatastore("banco_dados").sendNativeQuery(sql,(err,resul)=>{
-            if(err) {
-                sails.log.info(err);
-            }
-            else {
-                sails.log.info(resul);
-                
-                if( resul.rowCount > 0 ){//Adicionar este IF
+        var usersIds = await UserSettings.find({
+            where : {
+                'idade' : { '<=' : preferences.idadeMax, '>=' : preferences.idadeMin },
+                'sexo' : preferences.sexo,
+                'user_id' : { '!=' : [user_id,...deslikesIds] } 
+            },
+            select : ['user_id']    
+        })
+        
+        usersIds = usersIds.map((value)=>{
+            return value.user_id
+        })
+    
+        const sql = 'select user_id from userlocation where user_id in ('+usersIds+') and '+
+        'earth_distance(ll_to_earth(lat, lon),ll_to_earth('+location.lat+','+location.lon+')) <='+preferences.dist
+        
+        sails.getDatastore('default').sendNativeQuery(sql,async (err,resul)=>{
+            if(err)
+                return res.json({pairing:undefined})
 
-                    resul = resul.rows[0];
+            let ids = resul.rows.map((values)=>{
+                return values.user_id
+            })
 
-                    user_idade = resul.idade;
-                    user_lat = resul.lat;
-                    user_long = resul.long;
-                    pref_idadeMax = resul.idade_max;
-                    pre_idadeMin = resul.idade_min;
-                    dist_max = resul.dist_max*1000;
-                    interesse = resul.interesse;
-
-                    const sql = "select * from usuarios where (idade - "+ pre_idadeMin +") >= 0 and idade <= "+ pref_idadeMax + 
-                                    " and earth_distance(ll_to_earth(lat, long),ll_to_earth("+user_lat+","+ user_long+")) <= "+ dist_max +
-                                        " and id !=" + user_id +
-                                            " order by ( abs(idade-"+user_idade+") + earth_distance(ll_to_earth(lat, long),ll_to_earth("+user_lat+","+ user_long+")) )" 											  
-                
-                    sails.getDatastore("banco_dados").sendNativeQuery(sql,(err,resul)=>{
-                        if(!err){
-                            // console.log( resul );
-                            res.json( resul );//Retornar o resultado da consulta ao banco
-                        }
-                        else {
-                            // console.log(err);
-                            res.json( err );//Retornar o erro ocorrido durante a consulta ao banco
-                        }
-                    })
-                }
-                else {
-                    // O IF termina aqui
-                    res.json(resul)
-                }
-            }
-        });
+            let pairing = await Users.find({ 
+                where : { 
+                    id : ids 
+                },
+                select : ['name']
+            }).populate('settings')
+            
+            return res.json({pairing})
+        })
     }
-};
-
+}
